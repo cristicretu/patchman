@@ -5,6 +5,7 @@ import {
   Input,
   Select,
   Tabs,
+  Tag,
   Text,
 } from "@geist-ui/core";
 import type { NextPage } from "next";
@@ -107,7 +108,17 @@ const Home: NextPage = () => {
 
       <Fieldset>
         <Text h2>Response</Text>
-        <Divider my={0} />
+        <div style={{ display: "flex", gap: "8px", marginBottom: "24px" }}>
+          {/* succes warning error */}
+          <Tag type="success">Status: 200</Tag>
+          <Tag type="default">Time: 149ms</Tag>
+          <Tag type="default">Size: 183B</Tag>
+        </div>
+
+        <Tabs initialValue="1" paddingRight={2}>
+          <Tabs.Item label="Body" value="1"></Tabs.Item>
+          <Tabs.Item label="Headers" value="2"></Tabs.Item>
+        </Tabs>
       </Fieldset>
     </div>
   );
