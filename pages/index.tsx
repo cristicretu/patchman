@@ -1,8 +1,18 @@
-import { Button, Fieldset, Input, Select, Tabs, Text } from "@geist-ui/core";
+import {
+  Button,
+  Fieldset,
+  Input,
+  Loading,
+  Select,
+  Tabs,
+  Text,
+} from "@geist-ui/core";
 import type { NextPage } from "next";
 import axios, { Method } from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ResponseView from "@components/Response";
+import CodeMirror, { useCodeMirror } from "@uiw/react-codemirror";
+import ParamsView from "@components/Params";
 
 const Home: NextPage = () => {
   const [method, setMethod] = useState<Method>("GET");
@@ -10,8 +20,12 @@ const Home: NextPage = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [axiosTimer, setAxiosTimer] = useState("");
 
-  const [reqJSON, setReqJSON] = useState();
-  const [queryParams, setQueryParams] = useState<{ [key: string]: string }>({});
+  const [paramsKey, setParamsKey] = useState<any>([]);
+  const [paramsValue, setParamsValue] = useState<any>([]);
+  const [queryParams, setQueryParams] = useState<
+    Array<{ [key: string]: string }>
+  >([]);
+  const [reqJSON, setReqJSON] = useState<string>("");
   const [headers, setHeaders] = useState<{ [key: string]: string }>({});
 
   const [response, setResponse] = useState<any>();
@@ -29,7 +43,23 @@ const Home: NextPage = () => {
     setAxiosTimer(`${milliseconds}ms`);
   };
 
+  const paramsHandler = () => {
+    setQueryParams({
+      ...queryParams,
+      [paramsKey]: paramsValue,
+    });
+  };
+
   const submitHandler = () => {
+    let data;
+    try {
+      data = JSON.parse(JSON.stringify(reqJSON) || "{}");
+    } catch (err) {
+      console.log(err);
+      alert("Invalid JSON");
+      return;
+    }
+
     setLoading(true);
     setResponse(undefined);
     setResHeaders({});
@@ -40,6 +70,9 @@ const Home: NextPage = () => {
     axios({
       method: method,
       url: url,
+      params: queryParams,
+      headers,
+      data,
     })
       .then((res) => {
         setLoading(false);
@@ -57,6 +90,8 @@ const Home: NextPage = () => {
           : null;
       });
   };
+
+  console.log(queryParams);
 
   useEffect(() => {
     if (response) {
@@ -116,25 +151,19 @@ const Home: NextPage = () => {
               <Input
                 label="Key"
                 placeholder="message"
-                clearable
                 width="100%"
+                clearable
+                onChange={(e) => inputHandler(e, setParamsKey)}
                 style={{ flexBasis: "60%", width: "10%" }}
               />
               <Input
                 label="Value"
                 placeholder="Hello, World!"
-                clearable
                 width="100%"
+                clearable
+                onChange={(e) => inputHandler(e, setParamsValue)}
                 style={{ flexBasis: "60%", width: "10%" }}
               />
-              <Button
-                type="error"
-                ghost
-                scale={0.8}
-                style={{ flexBasis: "5%", width: "5%" }}
-              >
-                Delete
-              </Button>
             </div>
             <Button
               type="success"
@@ -142,27 +171,48 @@ const Home: NextPage = () => {
               auto
               style={{ marginTop: "24px" }}
               scale={0.8}
+              onClick={paramsHandler}
             >
               Add
             </Button>{" "}
+            {/* {queryParams.map((item, index) => {
+              let key = Object.keys(item)[0];
+
+              return (
+                <ParamsView key={index} paramKey={key} paramValue={item[key]} />
+              );
+            })} */}
           </Tabs.Item>
           <Tabs.Item label="Headers" value="2">
             Between the Web browser and the server, numerous computers and
             machines relay the HTTP messages.
           </Tabs.Item>
           <Tabs.Item label="JSON" value="3">
-            JSON
+            <CodeMirror
+              value="{}"
+              onChange={(value, viewUpdate) => {
+                setReqJSON(value);
+              }}
+              height="200px"
+            />
           </Tabs.Item>
         </Tabs>
       </Fieldset>
 
-      <ResponseView
-        axiosTimer={axiosTimer}
-        loading={loading}
-        response={response}
-        resHeaders={resHeaders}
-        size={size}
-      />
+      {loading && (
+        <Fieldset>
+          <Loading>Loading...</Loading>
+        </Fieldset>
+      )}
+      {response && (
+        <ResponseView
+          axiosTimer={axiosTimer}
+          loading={loading}
+          response={response}
+          resHeaders={resHeaders}
+          size={size}
+        />
+      )}
     </div>
   );
 };
