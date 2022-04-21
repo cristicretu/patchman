@@ -27,7 +27,6 @@ const Home: NextPage = () => {
 
   const [response, setResponse] = useState<any>();
   const [resHeaders, setResHeaders] = useState<{ [key: string]: string }>({});
-  const [body, setBody] = useState();
 
   const methodHandler = (val: any) => setMethod(val as Method);
   const inputHandler = (e: any, func: (value: any) => void) => {
@@ -35,19 +34,23 @@ const Home: NextPage = () => {
   };
   const submitHandler = () => {
     setLoading(true);
+    setResponse(undefined);
+    setResHeaders({});
     axios({
       method: method,
       url: url,
     })
       .then((res) => {
         setLoading(false);
-        setResponse(res.data);
+        setResponse(res);
         setResHeaders(res.headers);
-        console.log(res.headers);
       })
       .catch((err) => {
         setLoading(false);
-        console.log(err);
+        setResponse({
+          status: err.response.status,
+          data: err.response.data,
+        });
       });
   };
 
@@ -146,8 +149,23 @@ const Home: NextPage = () => {
       <Fieldset>
         <Text h2>Response</Text>
         <div style={{ display: "flex", gap: "8px", marginBottom: "24px" }}>
-          {/* succes warning error */}
-          <Tag type="success">Status: 200</Tag>
+          {response && (
+            <Tag
+              type={
+                response.status < 200
+                  ? "default"
+                  : response.status < 300
+                  ? "success"
+                  : response.status < 400
+                  ? "warning"
+                  : response.status < 600
+                  ? "error"
+                  : "default"
+              }
+            >
+              Status: {response.status}
+            </Tag>
+          )}
           <Tag type="default">Time: 149ms</Tag>
           <Tag type="default">Size: 183B</Tag>
         </div>
@@ -157,7 +175,7 @@ const Home: NextPage = () => {
             {loading && <Loading>Loading...</Loading>}
             {!loading && response && (
               <CodeMirror
-                value={JSON.stringify(response, null, 2)}
+                value={JSON.stringify(response.data, null, 2)}
                 height="600px"
                 // extensions={[jsonLang()]}
               />
