@@ -1,8 +1,10 @@
 import {
   Button,
+  Code,
   Divider,
   Fieldset,
   Input,
+  Loading,
   Select,
   Tabs,
   Tag,
@@ -15,21 +17,33 @@ import { useState } from "react";
 const Home: NextPage = () => {
   const [method, setMethod] = useState<Method>("GET");
   const [url, setUrl] = useState();
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const [reqJSON, setReqJSON] = useState();
+  const [queryParams, setQueryParams] = useState<{ [key: string]: string }>({});
+  const [headers, setHeaders] = useState<{ [key: string]: string }>({});
+
+  const [response, setResponse] = useState<any>();
+  const [resHeaders, setResHeaders] = useState<{ [key: string]: string }>({});
+  const [body, setBody] = useState();
 
   const methodHandler = (val: any) => setMethod(val as Method);
   const inputHandler = (e: any, func: (value: any) => void) => {
     func(e.target.value);
   };
   const submitHandler = () => {
-    console.log("meessss");
+    setLoading(true);
     axios({
       method: method,
       url: url,
     })
       .then((res) => {
-        console.log(res);
+        setLoading(false);
+        setResponse(res.data);
+        setResHeaders(res.headers);
       })
       .catch((err) => {
+        setLoading(false);
         console.log(err);
       });
   };
@@ -135,7 +149,10 @@ const Home: NextPage = () => {
         </div>
 
         <Tabs initialValue="1" paddingRight={2}>
-          <Tabs.Item label="Body" value="1"></Tabs.Item>
+          <Tabs.Item label="Body" value="1">
+            {loading && <Loading>Loading...</Loading>}
+            {!loading && response && <Code>{JSON.stringify(response)}</Code>}
+          </Tabs.Item>
           <Tabs.Item label="Headers" value="2"></Tabs.Item>
         </Tabs>
       </Fieldset>
