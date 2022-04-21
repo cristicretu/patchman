@@ -44,10 +44,9 @@ const Home: NextPage = () => {
   };
 
   const paramsHandler = () => {
-    setQueryParams({
-      ...queryParams,
-      [paramsKey]: paramsValue,
-    });
+    setQueryParams([...queryParams, { [paramsKey]: paramsValue }]);
+    setParamsKey("");
+    setParamsValue("");
   };
 
   const submitHandler = () => {
@@ -90,8 +89,6 @@ const Home: NextPage = () => {
           : null;
       });
   };
-
-  console.log(queryParams);
 
   useEffect(() => {
     if (response) {
@@ -153,6 +150,7 @@ const Home: NextPage = () => {
                 placeholder="message"
                 width="100%"
                 clearable
+                value={paramsKey}
                 onChange={(e) => inputHandler(e, setParamsKey)}
                 style={{ flexBasis: "60%", width: "10%" }}
               />
@@ -161,10 +159,77 @@ const Home: NextPage = () => {
                 placeholder="Hello, World!"
                 width="100%"
                 clearable
+                value={paramsValue}
                 onChange={(e) => inputHandler(e, setParamsValue)}
                 style={{ flexBasis: "60%", width: "10%" }}
               />
             </div>
+            {queryParams?.map((item, index) => (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  marginTop: "8px",
+                }}
+                key={index}
+              >
+                <Input
+                  label="Key"
+                  placeholder="message"
+                  width="100%"
+                  clearable
+                  value={() => {
+                    for (const key in item) {
+                      return key;
+                    }
+                  }}
+                  onChange={(e) => {
+                    let key: string;
+                    for (const prop in item) {
+                      key = prop;
+                      break;
+                    }
+                    const newQueryParams = [...queryParams];
+                    newQueryParams[index] = {
+                      ...newQueryParams[index],
+                      [e.target.value]: newQueryParams[index][key],
+                    };
+                    setQueryParams(newQueryParams);
+                  }}
+                  style={{ flexBasis: "60%", width: "10%" }}
+                />
+                <Input
+                  label="Value"
+                  placeholder="Hello, World!"
+                  width="100%"
+                  clearable
+                  value={item[Object.keys(item)[0]]}
+                  onChange={(e) => {
+                    const newQueryParams = [...queryParams];
+                    newQueryParams[index] = {
+                      ...newQueryParams[index],
+                      [Object.keys(item)[0]]: e.target.value,
+                    };
+                    setQueryParams(newQueryParams);
+                  }}
+                  style={{ flexBasis: "60%", width: "10%" }}
+                />
+                <Button
+                  type="error"
+                  ghost
+                  auto
+                  scale={0.8}
+                  onClick={() => {
+                    const newQueryParams = [...queryParams];
+                    newQueryParams.splice(index, 1);
+                    setQueryParams(newQueryParams);
+                  }}
+                >
+                  Delete
+                </Button>
+              </div>
+            ))}
             <Button
               type="success"
               ghost
@@ -175,18 +240,11 @@ const Home: NextPage = () => {
             >
               Add
             </Button>{" "}
-            {/* {queryParams.map((item, index) => {
-              let key = Object.keys(item)[0];
-
-              return (
-                <ParamsView key={index} paramKey={key} paramValue={item[key]} />
-              );
-            })} */}
           </Tabs.Item>
-          <Tabs.Item label="Headers" value="2">
+          {/* <Tabs.Item label="Headers" value="2">
             Between the Web browser and the server, numerous computers and
             machines relay the HTTP messages.
-          </Tabs.Item>
+          </Tabs.Item> */}
           <Tabs.Item label="JSON" value="3">
             <CodeMirror
               value="{}"
