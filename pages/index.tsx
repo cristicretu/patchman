@@ -9,11 +9,29 @@ import {
   Text,
 } from "@geist-ui/core";
 import type { NextPage } from "next";
-import PageContent from "@geist-ui/core";
+import axios, { Method } from "axios";
+import { useState } from "react";
 
 const Home: NextPage = () => {
-  const methodHandler = (method: string) => {
-    console.log(method);
+  const [method, setMethod] = useState<Method>("GET");
+  const [url, setUrl] = useState();
+
+  const methodHandler = (val: any) => setMethod(val as Method);
+  const inputHandler = (e: any, func: (value: any) => void) => {
+    func(e.target.value);
+  };
+  const submitHandler = () => {
+    console.log("meessss");
+    axios({
+      method: method,
+      url: url,
+    })
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   return (
@@ -35,7 +53,7 @@ const Home: NextPage = () => {
           gap: "0.5rem",
         }}
       >
-        <Select placeholder="GET">
+        <Select placeholder="GET" onChange={methodHandler}>
           <Select.Option value="GET">GET</Select.Option>
           <Select.Option value="POST">POST</Select.Option>
           <Select.Option value="PUT">PUT</Select.Option>
@@ -48,8 +66,9 @@ const Home: NextPage = () => {
           placeholder="https://jsonplaceholder.typicode.com/comments"
           width="100%"
           scale={1.13}
+          onChange={(e) => inputHandler(e, setUrl)}
         />
-        <Button type="success" ghost auto>
+        <Button type="success" ghost auto onClick={submitHandler}>
           Send
         </Button>{" "}
       </div>
