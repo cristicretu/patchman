@@ -1,18 +1,20 @@
 import {
   Button,
-  Code,
-  Divider,
   Fieldset,
   Input,
   Loading,
+  Card,
   Select,
   Tabs,
   Tag,
   Text,
+  Description,
 } from "@geist-ui/core";
 import type { NextPage } from "next";
 import axios, { Method } from "axios";
 import { useState } from "react";
+import CodeMirror from "@uiw/react-codemirror";
+import { json as jsonLang } from "@codemirror/lang-json";
 
 const Home: NextPage = () => {
   const [method, setMethod] = useState<Method>("GET");
@@ -41,6 +43,7 @@ const Home: NextPage = () => {
         setLoading(false);
         setResponse(res.data);
         setResHeaders(res.headers);
+        console.log(res.headers);
       })
       .catch((err) => {
         setLoading(false);
@@ -59,13 +62,14 @@ const Home: NextPage = () => {
     >
       <Text h1>Patchman</Text>
 
-      <div
+      <form
         style={{
           display: "flex",
           alignContent: "center",
           alignItems: "center",
           gap: "0.5rem",
         }}
+        onSubmit={submitHandler}
       >
         <Select placeholder="GET" onChange={methodHandler}>
           <Select.Option value="GET">GET</Select.Option>
@@ -85,7 +89,7 @@ const Home: NextPage = () => {
         <Button type="success" ghost auto onClick={submitHandler}>
           Send
         </Button>{" "}
-      </div>
+      </form>
 
       <Fieldset>
         <Tabs initialValue="1" paddingRight={2}>
@@ -151,9 +155,24 @@ const Home: NextPage = () => {
         <Tabs initialValue="1" paddingRight={2}>
           <Tabs.Item label="Body" value="1">
             {loading && <Loading>Loading...</Loading>}
-            {!loading && response && <Code>{JSON.stringify(response)}</Code>}
+            {!loading && response && (
+              <CodeMirror
+                value={JSON.stringify(response, null, 2)}
+                height="600px"
+                // extensions={[jsonLang()]}
+              />
+            )}
           </Tabs.Item>
-          <Tabs.Item label="Headers" value="2"></Tabs.Item>
+          <Tabs.Item label="Headers" value="2">
+            {Object.keys(resHeaders).map((key) => (
+              <Description
+                key={key}
+                title={key}
+                content={resHeaders[key]}
+                style={{ marginTop: "16px" }}
+              />
+            ))}
+          </Tabs.Item>
         </Tabs>
       </Fieldset>
     </div>

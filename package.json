@@ -9,7 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@codemirror/lang-json": "^0.20.0",
     "@geist-ui/core": "^2.3.8",
+    "@uiw/react-codemirror": "^4.6.0",
     "axios": "^0.26.1",
     "next": "12.1.5",
     "react": "18.0.0",
