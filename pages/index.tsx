@@ -11,7 +11,7 @@ import {
 } from "@geist-ui/core";
 import type { NextPage } from "next";
 import axios, { Method } from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 
 const Home: NextPage = () => {
@@ -26,6 +26,7 @@ const Home: NextPage = () => {
 
   const [response, setResponse] = useState<any>();
   const [resHeaders, setResHeaders] = useState<{ [key: string]: string }>({});
+  const [size, setSize] = useState("");
 
   const methodHandler = (val: any) => setMethod(val as Method);
   const inputHandler = (e: any, func: (value: any) => void) => {
@@ -42,7 +43,10 @@ const Home: NextPage = () => {
     setLoading(true);
     setResponse(undefined);
     setResHeaders({});
+    setAxiosTimer("");
+    setSize("");
     const startTime = Date.now();
+
     axios({
       method: method,
       url: url,
@@ -55,12 +59,20 @@ const Home: NextPage = () => {
       })
       .catch((err) => {
         setLoading(false);
-        setResponse({
-          status: err.response.status,
-          data: err.response.data,
-        });
+        err?.response !== undefined
+          ? setResponse({
+              status: err.response.status,
+              data: err.response.data,
+            })
+          : null;
       });
   };
+
+  useEffect(() => {
+    if (response) {
+      setSize(`${new TextEncoder().encode(response.data).length} B`);
+    }
+  }, [response]);
 
   return (
     <div
@@ -176,11 +188,7 @@ const Home: NextPage = () => {
           )}
 
           {axiosTimer && <Tag type="default">Time: {axiosTimer}</Tag>}
-          {response && (
-            <Tag type="default">
-              Size: {new TextEncoder().encode(response).length} B
-            </Tag>
-          )}
+          {response && size && <Tag type="default">Size: {size}</Tag>}
         </div>
 
         <Tabs initialValue="1" paddingRight={2}>
