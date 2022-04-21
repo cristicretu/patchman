@@ -3,7 +3,6 @@ import {
   Fieldset,
   Input,
   Loading,
-  Card,
   Select,
   Tabs,
   Tag,
@@ -14,12 +13,12 @@ import type { NextPage } from "next";
 import axios, { Method } from "axios";
 import { useState } from "react";
 import CodeMirror from "@uiw/react-codemirror";
-import { json as jsonLang } from "@codemirror/lang-json";
 
 const Home: NextPage = () => {
   const [method, setMethod] = useState<Method>("GET");
   const [url, setUrl] = useState();
   const [loading, setLoading] = useState<boolean>(false);
+  const [axiosTimer, setAxiosTimer] = useState("");
 
   const [reqJSON, setReqJSON] = useState();
   const [queryParams, setQueryParams] = useState<{ [key: string]: string }>({});
@@ -32,10 +31,18 @@ const Home: NextPage = () => {
   const inputHandler = (e: any, func: (value: any) => void) => {
     func(e.target.value);
   };
+
+  const axiosTimerFunc = (startTime: number) => {
+    const now = Date.now();
+    let milliseconds = Math.floor((now - startTime) % 1000);
+    setAxiosTimer(`${milliseconds}ms`);
+  };
+
   const submitHandler = () => {
     setLoading(true);
     setResponse(undefined);
     setResHeaders({});
+    const startTime = Date.now();
     axios({
       method: method,
       url: url,
@@ -44,6 +51,7 @@ const Home: NextPage = () => {
         setLoading(false);
         setResponse(res);
         setResHeaders(res.headers);
+        axiosTimerFunc(startTime);
       })
       .catch((err) => {
         setLoading(false);
@@ -166,8 +174,13 @@ const Home: NextPage = () => {
               Status: {response.status}
             </Tag>
           )}
-          <Tag type="default">Time: 149ms</Tag>
-          <Tag type="default">Size: 183B</Tag>
+
+          {axiosTimer && <Tag type="default">Time: {axiosTimer}</Tag>}
+          {response && (
+            <Tag type="default">
+              Size: {new TextEncoder().encode(response).length} B
+            </Tag>
+          )}
         </div>
 
         <Tabs initialValue="1" paddingRight={2}>
